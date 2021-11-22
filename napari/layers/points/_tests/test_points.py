@@ -4,6 +4,8 @@ from itertools import cycle, islice
 import numpy as np
 import pandas as pd
 import pytest
+from hypothesis import given
+from hypothesis.extra.numpy import array_shapes, arrays, unicode_string_dtypes
 from vispy.color import get_colormap
 
 from napari._tests.utils import check_layer_world_data_extent
@@ -63,6 +65,18 @@ def test_empty_points_with_properties():
         'cont_prop': np.array([0, 0], dtype=float),
     }
     np.testing.assert_equal(pts.properties, props)
+
+
+@given(arrays(dtype=unicode_string_dtypes(), shape=array_shapes(max_dims=1)))
+def test_empty_points_with_label_properties(labels):
+    """Test instantiating an empty Points layer with label properties
+
+    See: URL
+    """
+    properties = {'label': labels}
+    pts = Points(property_choices=properties)
+    current_props = {k: v[0] for k, v in properties.items()}
+    np.testing.assert_equal(pts.current_properties, current_props)
 
 
 def test_empty_points_with_properties_list():
